@@ -13,8 +13,10 @@ import java.util.Random;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -33,8 +35,9 @@ public class BrokerController {
   @ResponseStatus(HttpStatus.CREATED)
   @RequestMapping(value = "/specificCurrency/{name}", consumes = MediaType.APPLICATION_JSON_VALUE,
       method = RequestMethod.POST)
-  public long getCurrency(@PathVariable String name) {
+  public @ResponseBody String getCurrency(@RequestBody String name) {
     String response = null;
+    String actualresponse = null;
     try {
       String addr = System.getenv("CONVERTER_ADDR");
       URL url = new URL(addr + "currency");
@@ -43,20 +46,17 @@ public class BrokerController {
       conn.setRequestProperty("Accept", "application/json");
 
       if (conn.getResponseCode() != 200) {
-        throw new RuntimeException("Failed : HTTP error code : "
+        throw new RuntimeException("Failed : Hng  error code : "
             + conn.getResponseCode());
       }
 
       BufferedReader br = new BufferedReader(new InputStreamReader(
           (conn.getInputStream())));
 
-      System.out.println("Output from Server .... \n");
       while ((response = br.readLine()) != null) {
-
+        actualresponse = response;
       }
-
       conn.disconnect();
-
     } catch (MalformedURLException e) {
 
       e.printStackTrace();
@@ -64,17 +64,27 @@ public class BrokerController {
       e.printStackTrace();
     }
 
-    Map<String, Object> map = new HashMap<String, Object>();
+/*    String[] arrayFinal = null;
+    for (String str : array) {
+      if (str.contains(name)) {
+        arrayFinal = str.split(":");
+        return arrayFinal[1];
+      }
+    }*/
+
+    Map<String, String> map = new HashMap<String, String>();
     ObjectMapper mapper = new ObjectMapper();
     // convert JSON string to Map
     try {
-      map = mapper.readValue(response, new TypeReference<Map<String, Long>>() {
+      map = mapper.readValue(actualresponse, new TypeReference<Map<String, String>>() {
       });
     } catch (IOException e) {
+      System.out.println("Exception occured while parsing the JSON .... \n");
       e.printStackTrace();
     }
-    long result = (long) map.get(name);
-    System.out.println(map);
+    System.out.println("prepared Map .... \n" + map.toString());
+
+    String result = map.get(name);
     return result;
   }
 }
