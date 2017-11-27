@@ -1,0 +1,23 @@
+APPLICATION_ID: default
+service_description:
+  name: broker
+  version: 0.1
+cse:
+  service:
+    registry:
+      address: http://${SC_HOST}:30100
+  rest:
+    address: 0.0.0.0:8081
+  highway:
+    address: 0.0.0.0:7070
+  handler:
+    chain:
+      Provider:
+        default: bizkeeper-provider
+      Consumer:
+        default: loadbalance,bizkeeper-consumer
+  references: 
+    converter: 
+      version-rule: 0.1+
+      transport: rest
+
